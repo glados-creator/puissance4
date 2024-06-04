@@ -6,8 +6,8 @@ javac -d ./bin/ --module-path /usr/share/openjfx/lib/ --add-modules javafx.contr
 echo "" &&
 mkdir doc
 echo "doc" &&
-javadoc -d ./doc/ --module-path /usr/share/openjfx/lib/ --add-modules javafx.controls ./src/*.java &&
+javadoc -p -d ./doc/ --module-path /usr/share/openjfx/lib/ --add-modules javafx.controls ./src/*.java &&
 echo "" &&
 echo "running" &&
 echo "" &&
-java -cp ./bin/ --module-path /usr/share/openjfx/lib/ --add-modules javafx.controls Executable
+java -cp ./bin/ --module-path /usr/share/openjfx/lib/ --add-modules javafx.controls puissance4
