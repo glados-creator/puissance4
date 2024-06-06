@@ -1,32 +1,19 @@
 import javafx.application.Application;
-import javafx.stage.Stage;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.GridPane;
-import javafx.scene.Group; 
-import javafx.scene.control.Label;
 import javafx.scene.control.Button;
-import javafx.scene.control.Slider ;
+import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.geometry.Pos;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
-import javafx.geometry.Orientation;
+import javafx.stage.Stage;
 import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Background;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class puissance4 extends Application {
 
@@ -37,8 +24,13 @@ public class puissance4 extends Application {
     private Button BQuitter;
     private Button BJouer;
 
+    private Chronometre chrono1;
+    private Chronometre chrono2;
+
     @Override
     public void init() {
+        chrono1 = new Chronometre();
+        chrono2 = new Chronometre();
     }    
 
     private Scene laScene() {
@@ -67,7 +59,6 @@ public class puissance4 extends Application {
         accueilImageView.setFitWidth(32); 
         accueilImageView.setFitHeight(32); 
         Accueil.setGraphic(accueilImageView);
-        // Accueil.setOnAction(new RetourAccueil(this.modelePendu, this));
 
         ImageView settingsImageView = new ImageView(new Image("file:img/parametres.png"));
         settingsImageView.setFitWidth(32); 
@@ -88,6 +79,9 @@ public class puissance4 extends Application {
 
     public void modeAccueil() {
         panelCentral.getChildren().clear();
+        
+        Accueil.setDisable(true);
+        Settings.setDisable(false);
 
         BQuitter = new Button("Quitter");
         BJouer = new Button("Jouer");
@@ -104,16 +98,14 @@ public class puissance4 extends Application {
         BQuitter.setStyle("-fx-background-color: #FF8484; -fx-text-fill: white;");
         BJouer.setStyle("-fx-background-color: #318B31; -fx-text-fill: white;");
 
-        BQuitter.setOnAction(new ControleurQuitter(this));
-        BJouer.setOnAction(new ControleurJouer(this));
+        BQuitter.setOnAction(e -> quitter());
+        BJouer.setOnAction(e -> jouer());
 
         HBox hbox = new HBox(10, BQuitter, BJouer);
         hbox.setAlignment(Pos.CENTER);
 
         panelCentral.setCenter(hbox);
 
-        Accueil.setDisable(true);
-        Settings.setDisable(false);
     }
 
     /**
@@ -127,7 +119,38 @@ public class puissance4 extends Application {
      * Cette méthode permet de lancer la partie
      */
     public void jouer() {
-        System.out.println("Start Game");
+        panelCentral.getChildren().clear();
+
+        Accueil.setDisable(false);
+        Settings.setDisable(true);
+
+        Accueil.setOnAction(e -> modeAccueil());
+
+        VBox leftBox = new VBox(10, chrono1);
+        leftBox.setPadding(new Insets(10));
+
+        VBox rightBox = new VBox(10, chrono2);
+        rightBox.setPadding(new Insets(10));
+
+        TitledPane chronoPaneR = new TitledPane("Joueur 1", this.chrono1);
+        chronoPaneR.setCollapsible(false);
+        rightBox.getChildren().add(chronoPaneR);
+
+        TitledPane chronoPaneL = new TitledPane("Joueur 2", this.chrono2);
+        chronoPaneL.setCollapsible(false);
+        leftBox.getChildren().add(chronoPaneL);
+
+        // Mettre le plateau de jeu ICI 
+        Pane gameBoard = new Pane();
+        //gameBoard.setStyle("-fx-background-color: lightgrey;");
+        gameBoard.setPrefSize(400, 400);
+
+        panelCentral.setLeft(leftBox);
+        panelCentral.setRight(rightBox);
+        panelCentral.setCenter(gameBoard);
+
+        chrono1.start();
+        chrono2.start();
     }
 
     @Override
@@ -137,6 +160,7 @@ public class puissance4 extends Application {
         this.modeAccueil();
         stage.show();
     }
+
     /**
      * main entry point
      * @param args String[] terms args
