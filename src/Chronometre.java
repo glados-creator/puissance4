@@ -47,9 +47,9 @@ public class Chronometre extends Text {
         long seconds = (tempsMillisec / 1000) % 60;
         long minutes = (tempsMillisec / 1000) / 60;
         if (minutes > 0) {
-            this.setText(minutes + " min " + seconds + " sec");
+            this.setText(minutes + " m " + seconds + " s");
         } else{
-            this.setText(seconds + " sec");  
+            this.setText(seconds + " s");  
         }
         
     }

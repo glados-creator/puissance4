@@ -1,3 +1,5 @@
+import java.net.URL;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -27,19 +29,26 @@ public class puissance4 extends Application {
     private Chronometre chrono1;
     private Chronometre chrono2;
 
+
+
+
     @Override
     public void init() {
         chrono1 = new Chronometre();
         chrono2 = new Chronometre();
-    }    
-
+    }   
+    
+    
     private Scene laScene() {
         BorderPane fenetre = new BorderPane();
         fenetre.setTop(this.titre());
         panelCentral = new BorderPane();
         fenetre.setCenter(this.panelCentral);
-        return new Scene(fenetre, 800, 600);
+        Scene scene = new Scene(fenetre, 800, 600);
+        return scene;
     }
+
+
 
     private Pane titre() {
         BorderPane banniere = new BorderPane();
@@ -132,13 +141,14 @@ public class puissance4 extends Application {
         VBox rightBox = new VBox(10, chrono2);
         rightBox.setPadding(new Insets(10));
 
-        TitledPane chronoPaneR = new TitledPane("Joueur 1", this.chrono1);
+        TitledPane chronoPaneR = new TitledPane("Joueur 2", this.chrono1);
         chronoPaneR.setCollapsible(false);
         rightBox.getChildren().add(chronoPaneR);
-
-        TitledPane chronoPaneL = new TitledPane("Joueur 2", this.chrono2);
+       
+        TitledPane chronoPaneL = new TitledPane("Joueur 1", this.chrono2);
         chronoPaneL.setCollapsible(false);
         leftBox.getChildren().add(chronoPaneL);
+       
 
         // Mettre le plateau de jeu ICI 
         Pane gameBoard = new Pane();
@@ -153,6 +163,8 @@ public class puissance4 extends Application {
         chrono2.start();
     }
 
+
+
     @Override
     public void start(Stage stage) {
         stage.setTitle("Puissance 4");
@@ -160,6 +172,7 @@ public class puissance4 extends Application {
         this.modeAccueil();
         stage.show();
     }
+
 
     /**
      * main entry point
