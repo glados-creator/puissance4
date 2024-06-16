@@ -1,5 +1,8 @@
+import java.util.Optional;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.ButtonType;
 
 public class ControleurQuitter implements EventHandler<ActionEvent> {
     private puissance4 appli;
@@ -10,7 +13,12 @@ public class ControleurQuitter implements EventHandler<ActionEvent> {
     
     @Override
     public void handle(ActionEvent e) {
-        System.out.println("Quitter");
-        this.appli.quitter();
+        Optional<ButtonType> result = appli.alerteQuitter().showAndWait();
+        if (result.isPresent() && result.get().equals(ButtonType.YES)) {
+            appli.quitter();
+        }
+        else {
+            appli.modeAccueil();
+        }
     }
 }

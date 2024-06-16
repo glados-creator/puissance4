@@ -1,71 +1,70 @@
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class ControleurPlacerPiece implements EventHandler<MouseEvent> {
-    private puissance4 appli;
-    private int col;
+
+    private puissance4 app;
+    private int colonne;
     private GridPane grille;
     private model jeu;
-    private boolean joueur1;
 
-    public ControleurPlacerPiece(puissance4 appli, int col, GridPane grille, model jeu, boolean joueur1) {
-        this.appli = appli;
-        this.col = col;
+    public ControleurPlacerPiece(puissance4 app, int colonne, GridPane grille, model jeu) {
+        this.app = app;
+        this.colonne = colonne;
         this.grille = grille;
         this.jeu = jeu;
-        this.joueur1 = joueur1;
     }
 
     @Override
     public void handle(MouseEvent event) {
-        short equipe = joueur1 ? (short)1 : (short)2; // Déplacer la déclaration ici
+        boolean joueur1 = app.isJoueur1(); // Récupérer l'état du joueur courant depuis l'application principale
+        int ligne = jeu.placerPiece(colonne, joueur1 ? 1 : 2); // 1 pour joueur 1 (rouge), 2 pour joueur 2 (jaune)
+        if (ligne == -1) {
+            // Colonne pleine, ignorer le clic
+            return;
+        }
 
-        for (int row = jeu.getheight() - 1; row >= 0; row--) {
-            if (jeu.get((short)col, (short)row) == 0) {
-                // Vérifier si la cellule précédente dans la même colonne contient déjà un jeton de la même équipe
-                if (row < jeu.getheight() - 1 && jeu.get((short)col, (short)(row + 1)) == equipe) {
-                    // Si oui, ne rien faire et sortir de la méthode
-                    return;
-                }
-                
-                jeu.set((short)col, (short)row, equipe); // Utiliser la variable equipe ici
+        // Mise à jour de l'interface graphique
+        Pane cellule = (Pane) getNodeFromGridPane(grille, colonne, ligne);
+        if (cellule != null) {
+            Circle cercle = new Circle(37);
+            cercle.setFill(joueur1 ? Color.RED : Color.YELLOW); // Rouge pour joueur 1, Jaune pour joueur 2
+            cercle.setStroke(Color.BLUE);
+            cercle.setStrokeWidth(2);
+            cercle.setLayoutX(40);
+            cercle.setLayoutY(40);
+            cellule.getChildren().add(cercle);
+        }
 
-                Pane plateau = (Pane) getPosition(grille, col, row);
-                Circle cercle = new Circle(35);
-
-                if (joueur1) {
-                    cercle.setFill(Color.RED);
-                } else {
-                    cercle.setFill(Color.YELLOW);
-                }
-
-                cercle.setStroke(Color.BLUE);
-                cercle.setStrokeWidth(2);
-                cercle.setLayoutX(40);
-                cercle.setLayoutY(40);
-
-                plateau.getChildren().add(cercle);
-
-                if (jeu.win()) {
-                    System.out.println("Le joueur " + equipe + " a gagné !");
-                    // Gérer la fin de la partie
-                }
-
-                joueur1 = !joueur1; // Changer de joueur
-                break;
-            }
+        // Vérifier la condition de victoire
+        if (jeu.checkVictory(colonne, ligne)) {
+            // Afficher un message de victoire et désactiver les clics
+            String winner = joueur1 ? "Joueur 1 (Rouge)" : "Joueur 2 (Jaune)";
+            app.getChrono1().stop();
+            app.getChrono2().stop();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, winner + " a gagné !");
+            alert.setHeaderText("Félicitations !");
+            alert.setTitle("Puissance 4");
+            alert.showAndWait().ifPresent(response -> app.modeAccueil());
+            grille.setDisable(true);
+        } else {
+            // Alternance des joueurs
+            app.switchJoueur();
         }
     }
 
-
-    private Pane getPosition(GridPane gridPane, int col, int row) {
-        for (javafx.scene.Node pos : gridPane.getChildren()) {
-            if (GridPane.getColumnIndex(pos) == col && GridPane.getRowIndex(pos) == row) {
-                return (Pane) pos;
+    /**
+     * Helper method to get a node from a GridPane by its column and row indices
+     */
+    private Pane getNodeFromGridPane(GridPane gridPane, int col, int row) {
+        for (javafx.scene.Node node : gridPane.getChildren()) {
+            if (GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row) {
+                return (Pane) node;
             }
         }
         return null;
