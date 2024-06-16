@@ -1,144 +1,104 @@
 public class model {
-    private static final short MIN_WIDTH = 5;
-    private static final short MAX_WIDTH = 16;
-    private static final short MIN_HEIGHT = 5;
-    private static final short MAX_HEIGHT = 16;
-    private static final short MIN_EQUIPE = 2;
-    private static final short MAX_EQUIPE = 16;
+    private final int[][] grille; // 0 = vide, 1 = joueur 1 (rouge), 2 = joueur 2 (jaune)
+    private final int largeur;
+    private final int hauteur;
 
-    private short iwidth;
-    private short iheight;
-    private short nbequipe;
-    private short[][] iboard;
-    private short state;
+    public model(int largeur, int hauteur) {
+        this.largeur = largeur;
+        this.hauteur = hauteur;
+        this.grille = new int[hauteur][largeur];
+    }
 
-    public void create_model(short width, short height, short n_nbequipe) {
-        nbequipe = (short) n_nbequipe;
-        iwidth = width;
-        iheight = height;
-        state = -1;
-        iboard = new short[width][height];
-        for (short i = 0; i < iwidth; i++) {
-            for (short j = 0; j < iheight; j++) {
-                iboard[i][j] = 0;
+    public int getwidth() {
+        return largeur;
+    }
+
+    public int getheight() {
+        return hauteur;
+    }
+
+    /**
+     * Place une pièce dans la colonne spécifiée pour le joueur donné.
+     * @param col La colonne où placer la pièce.
+     * @param joueur Le joueur (1 pour rouge, 2 pour jaune).
+     * @return La ligne où la pièce a été placée, ou -1 si la colonne est pleine.
+     */
+    public int placerPiece(int col, int joueur) {
+        for (int row = hauteur - 1; row >= 0; row--) {
+            if (grille[row][col] == 0) { // Si la cellule est vide
+                grille[row][col] = joueur;
+                return row; // Retourner la ligne où la pièce a été placée
+            }
+        }
+        return -1; // La colonne est pleine
+    }
+
+    /**
+     * Vérifie si le dernier mouvement a conduit à une victoire.
+     * @param col La colonne du dernier mouvement.
+     * @param row La ligne du dernier mouvement.
+     * @return true si un joueur a gagné, sinon false.
+     */
+    public boolean checkVictory(int col, int row) {
+        int joueur = grille[row][col];
+        if (joueur == 0) {
+            return false;
+        }
+
+        // Vérifier les quatre directions (horizontal, vertical, diagonal)
+        return checkDirection(col, row, 1, 0, joueur) // Horizontal
+                || checkDirection(col, row, 0, 1, joueur) // Vertical
+                || checkDirection(col, row, 1, 1, joueur) // Diagonale descendante
+                || checkDirection(col, row, 1, -1, joueur); // Diagonale ascendante
+    }
+    
+
+    /**
+     * Vérifie la condition de victoire dans une direction donnée.
+     * @param col La colonne de départ.
+     * @param row La ligne de départ.
+     * @param dCol La direction de la colonne.
+     * @param dRow La direction de la ligne.
+     * @param joueur Le joueur à vérifier (1 ou 2).
+     * @return true si le joueur a 4 pièces consécutives dans la direction donnée.
+     */
+    private boolean checkDirection(int col, int row, int dCol, int dRow, int joueur) {
+        int count = 0;
+
+        // Vérifier dans la direction positive
+        for (int i = 0; i < 4; i++) {
+            int currentCol = col + i * dCol;
+            int currentRow = row + i * dRow;
+            if (currentCol >= 0 && currentCol < largeur && currentRow >= 0 && currentRow < hauteur 
+                    && grille[currentRow][currentCol] == joueur) {
+                count++;
+            } else {
+                break;
+            }
+        }
+
+        
+
+        // Vérifier dans la direction négative
+        for (int i = 1; i < 4; i++) {
+            int currentCol = col - i * dCol;
+            int currentRow = row - i * dRow;
+            if (currentCol >= 0 && currentCol < largeur && currentRow >= 0 && currentRow < hauteur 
+                    && grille[currentRow][currentCol] == joueur) {
+                count++;
+            } else {
+                break;
+            }
+        }
+
+        return count >= 4;
+    }
+
+    public void reset() {
+        for (int row = 0; row < hauteur; row++) {
+            for (int col = 0; col < largeur; col++) {
+                grille[row][col] = 0;
             }
         }
     }
-
-    public model() {
-        create_model((short) 7, (short) 6, (short) 2);
-    }
-
-    public boolean change_size(short width, short height) {
-        if (width < MIN_WIDTH || width > MAX_WIDTH)
-            return false;
-        if (height < MIN_HEIGHT || height > MAX_HEIGHT)
-            return false;
-        short[][] board = new short[width][height];
-        // transpose
-        for (short i = 0; i < Math.min(iwidth, width); i++) {
-            for (short j = 0; j < Math.min(iheight, height); j++) {
-                board[i][j] = iboard[i][j];
-            }
-        }
-        iboard = board;
-        return true;
-    }
-
-    public boolean change_nbequipe(short n_nbequipe) {
-        if (n_nbequipe < MIN_EQUIPE || n_nbequipe > MAX_EQUIPE)
-            return false;
-        nbequipe = n_nbequipe;
-        for (short i = 0; i < iwidth; i++) {
-            for (short j = 0; j < iheight; j++) {
-                if (iboard[i][j] > nbequipe)
-                    iboard[i][j] = 0;
-            }
-        }
-        return true;
-    }
-
-    public boolean inbound(short width, short height) {
-        if (width < 0 || width > iwidth)
-            return false;
-        if (height < 0 || height > iheight)
-            return false;
-        return true;
-    }
-
-    public short get(short width, short height) {
-        if (!(inbound(width, height)))
-            return -1;
-        return iboard[width][height];
-    }
-
-    public boolean set(short width, short height, short equipe) {
-        if (!(inbound(width, height)))
-            return false;
-        if (iboard[width][height] != 0)
-            return false;
-        iboard[width][height] = equipe;
-        state = check();
-        return true;
-    }
-
-    private short check() {
-        short nb = 0;
-        short last = -1;
-        for (short i = 0; i < iwidth && state == -1; i++) {
-            for (short j = 0; j < iheight && state == -1; j++) {
-                // for each case
-                for (short dx = -1; dx < 2 && state == -1; dx++) {
-                    for (short dy = -1; dy < 2 && state == -1; dy++) {
-                        // for each direction
-                        last = -1;
-                        nb = 0;
-                        for (short h = 0; h < 4; h++) {
-                            // 4 times
-                            short c_w = (short)(i+(dx*h));
-                            short c_h = (short)(j+(dy*h));
-                            if (!(inbound(c_w,c_h)))
-                                break;
-                            if (last == -1 || last == iboard[c_w][c_h]) {
-                                if (last == -1) {
-                                    last = iboard[c_w][c_h];
-                                } else {
-                                    nb += 1;
-                                }
-                            } else {
-                                last = iboard[c_w][c_h];
-                                nb = 1;
-                            }
-                        }
-                        if (nb > 3) {
-                            state = last;
-                        }
-
-                    }
-                }
-            }
-        }
-        return -1;
-    }
-
-    public boolean win() {
-        return state != -1;
-    }
-
-    public short get_equipe_win() {
-        return state;
-    }
-
-    public short getwidth() {
-        return iwidth;
-    }
-
-    public short getheight() {
-        return iheight;
-    }
-
-    public short getnbequipe() {
-        return nbequipe;
-    }
-
 }
